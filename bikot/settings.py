@@ -186,3 +186,12 @@ STORAGES = {
     },
 }
 
+@receiver(post_migrate)
+def create_superuser(sender, **kwargs):
+    from django.contrib.auth.models import User
+    if User.objects.count() == 0:
+        User.objects.create_superuser(
+            username=os.getenv("DJANGO_SUPERUSER_USERNAME"),
+            email=os.getenv("DJANGO_SUPERUSER_EMAIL"),
+            password=os.getenv("DJANGO_SUPERUSER_PASSWORD")
+        )
