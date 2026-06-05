@@ -1,38 +1,48 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  web:
-    build: .
-    container_name: bikot_web
-    restart: always
+  bikot-web:
+    image: bikot:latest
+
     ports:
       - "8000:8000"
+
+    security_opt:
+      - no-new-privileges:true
+
+    tmpfs:
+      - /tmp
+      - /var/tmp
+
+    cap_drop:
+      - ALL
+
     environment:
       - SECRET_KEY=${SECRET_KEY}
       - DEBUG=${DEBUG}
-      - ALLOWED_HOSTS="*"
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - ESP32_API_KEY=${ESP32_API_KEY}
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
-    volumes:
-      # Volume persistente para upload de mídia (fotos de avisos, etc.)
-      - media_data:/app/media
-    # Comando de inicialização via entrypoint
-    entrypoint: /app/entrypoint.sh
 
-# Se o banco de dados estiver rodando em outro container Docker, ele precisa estar
-# na mesma rede deste container. Você pode criar uma rede compartilhada ou usar uma existente:
-# 
-# Para usar uma rede externa existente, descomente a seção 'networks' abaixo e configure no serviço 'web':
-#     networks:
-#       - minha_rede_compartilhada
-#
-# networks:
-#   minha_rede_compartilhada:
-#     external: true
+    volumes:
+      - media_data:/app/media
+
+    entrypoint:
+      - /app/entrypoint.sh
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    deploy:
+      replicas: 1
+
+      restart_policy:
+        condition: on-failure
+        delay: 5s
 
 volumes:
   media_data:
