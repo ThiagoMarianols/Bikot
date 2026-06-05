@@ -1,6 +1,6 @@
 # 🚲 Bikot (Bicicletário IoT Inteligente)
 
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.12%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/Django-6.0%2B-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
 [![IoT](https://img.shields.io/badge/IoT-ESP32-E7352C?style=for-the-badge&logo=espressif&logoColor=white)](https://www.espressif.com/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
@@ -92,7 +92,7 @@ graph TD
 ## 🚀 Como Executar o Projeto
 
 ### Pré-requisitos
-* Python 3.10 ou superior instalado.
+* Python 3.12 ou superior instalado.
 
 ### Passo a Passo
 
