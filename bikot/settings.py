@@ -176,12 +176,13 @@ JWT_ACCESS_TOKEN_LIFETIME_MINUTES = 60
 JWT_REFRESH_TOKEN_LIFETIME_DAYS = 7
 
 # Configuração do WhiteNoise para armazenar e comprimir estáticos de forma eficiente
+import sys
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage" if 'test' in sys.argv else "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
 
