@@ -1,0 +1,123 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Alunos - Bikot{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    
+    <!-- Page Header -->
+    <div class="row align-items-center mb-5">
+        <div class="col-sm-8">
+            <h1 class="fw-bold text-white mb-1">Alunos</h1>
+            <p class="text-muted mb-0">Gerencie o cadastro de alunos que utilizam o estacionamento de bicicletas.</p>
+        </div>
+        <div class="col-sm-4 text-sm-end mt-3 mt-sm-0">
+            <a href="{% url 'aluno_create' %}" class="btn btn-primary py-2 px-3 fw-semibold">
+                <i class="fa-solid fa-plus me-2"></i> Cadastrar Aluno
+            </a>
+        </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="glass-card p-4">
+        <div class="table-responsive">
+            <table class="table custom-table text-white">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Matrícula</th>
+                        <th>E-mail</th>
+                        <th>Crachá RFID</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for aluno in page_obj %}
+                        <tr>
+                            <td>
+                                <strong class="text-white">{{ aluno.nome }}</strong>
+                            </td>
+                            <td>{{ aluno.matricula }}</td>
+                            <td>{{ aluno.email }}</td>
+                            <td>
+                                {% if aluno.rfid %}
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="status-pill status-primary px-3 py-2">
+                                            <i class="fa-solid fa-id-card me-1"></i> {{ aluno.rfid.uid }}
+                                        </span>
+                                        <button type="button" onclick="iniciarCadastroRFID(this.dataset.alunoId, this.dataset.alunoNome)" data-aluno-id="{{ aluno.pk }}" data-aluno-name="{{ aluno.nome|escapejs }}" class="btn btn-sm btn-outline-secondary py-1 px-2 border-secondary" title="Alterar crachá usando o leitor">
+                                            <i class="fa-solid fa-arrows-rotate text-muted"></i>
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="text-muted" style="font-style: italic;">Sem crachá</span>
+                                        <button type="button" onclick="iniciarCadastroRFID(this.dataset.alunoId, this.dataset.alunoNome)" data-aluno-id="{{ aluno.pk }}" data-aluno-name="{{ aluno.nome|escapejs }}" class="btn btn-sm btn-outline-primary py-1 px-2 d-flex align-items-center gap-1" style="font-size: 0.85rem;" title="Cadastrar crachá usando o leitor">
+                                            <i class="fa-solid fa-rss"></i> Vincular Leitor
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'aluno_update' aluno.pk %}" class="btn btn-sm btn-outline-info me-2">
+                                    <i class="fa-solid fa-pen-to-square"></i> Editar
+                                </a>
+                                <a href="{% url 'aluno_delete' aluno.pk %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="fa-solid fa-trash-can"></i> Excluir
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-5">Nenhum aluno cadastrado.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        {% if page_obj.has_other_pages %}
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 border-top border-secondary border-opacity-20 pt-4 mt-3">
+                <span class="text-muted" style="font-size: 0.9rem;">
+                    Exibindo <strong>{{ page_obj.start_index }}</strong> - <strong>{{ page_obj.end_index }}</strong> de <strong>{{ page_obj.paginator.count }}</strong> alunos
+                </span>
+                <nav aria-label="Navegação de páginas de alunos">
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link text-muted border-secondary bg-transparent" href="?page=1" title="Primeira Página">
+                                    <i class="fa-solid fa-angles-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link text-muted border-secondary bg-transparent" href="?page={{ page_obj.previous_page_number }}" title="Página Anterior">
+                                    <i class="fa-solid fa-angle-left"></i> Anterior
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item active">
+                            <span class="page-link border-primary bg-primary text-white">{{ page_obj.number }}</span>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link text-muted border-secondary bg-transparent" href="?page={{ page_obj.next_page_number }}" title="Próxima Página">
+                                    Próxima <i class="fa-solid fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link text-muted border-secondary bg-transparent" href="?page={{ page_obj.paginator.num_pages }}" title="Última Página">
+                                    <i class="fa-solid fa-angles-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

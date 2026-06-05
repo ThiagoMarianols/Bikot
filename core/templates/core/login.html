@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Bikot</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+</head>
+<body class="d-flex align-items-center justify-content-center py-4" style="min-height: 100vh;">
+
+    <!-- Messages -->
+    <div class="alert-float-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show glass-card text-white border-0" role="alert" style="background: rgba(17, 24, 39, 0.85);">
+                    <div class="d-flex align-items-center gap-2">
+                        {% if message.tags == 'success' %}
+                            <i class="fa-solid fa-circle-check text-success"></i>
+                        {% elif message.tags == 'error' %}
+                            <i class="fa-solid fa-triangle-exclamation text-danger"></i>
+                        {% else %}
+                            <i class="fa-solid fa-circle-info text-info"></i>
+                        {% endif %}
+                        <div>{{ message }}</div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+                
+                <!-- Main Login Card -->
+                <div class="glass-card p-5">
+                    
+                    <div class="text-center mb-5">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle mb-3" style="width: 70px; height: 70px; box-shadow: 0 0 20px var(--color-primary-glow);">
+                            <i class="fa-solid fa-bicycle text-primary fs-2"></i>
+                        </div>
+                        <h2 class="fw-bold text-white mb-1" style="letter-spacing: 1px;">BIKOT</h2>
+                        <span class="text-muted text-uppercase fs-7" style="font-size: 0.8rem; letter-spacing: 2px;">Sistema de Estacionamento</span>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="id_username" class="form-label text-muted">Usuário Admin</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0 border-secondary text-muted" style="border-radius: 10px 0 0 10px;">
+                                    <i class="fa-solid fa-user"></i>
+                                </span>
+                                <input type="text" name="username" autofocus maxlength="150" class="form-control border-start-0 border-secondary" required id="id_username" placeholder="Digite seu usuário" style="border-radius: 0 10px 10px 0;">
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label for="id_password" class="form-label text-muted">Senha</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0 border-secondary text-muted" style="border-radius: 10px 0 0 10px;">
+                                    <i class="fa-solid fa-lock"></i>
+                                </span>
+                                <input type="password" name="password" class="form-control border-start-0 border-secondary" required id="id_password" placeholder="Digite sua senha" style="border-radius: 0 10px 10px 0;">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-3 fw-semibold mb-3 rounded-3" style="font-size: 1.05rem;">
+                            Entrar no Painel <i class="fa-solid fa-arrow-right-to-bracket ms-2"></i>
+                        </button>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

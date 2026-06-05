@@ -1,0 +1,223 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard Geral - Bikot{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    
+    <!-- Page Header -->
+    <div class="row align-items-center mb-5">
+        <div class="col-md-8">
+            <h1 class="fw-bold text-white mb-1">Painel Administrativo</h1>
+            <p class="text-muted mb-0">Controle, monitoramento e métricas em tempo real das vagas de bicicletas.</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <a href="{% url 'tv_dashboard' %}" target="_blank" class="btn btn-outline-primary py-2 px-3 fw-semibold">
+                <i class="fa-solid fa-tv me-2"></i> Abrir Tela da TV
+            </a>
+        </div>
+    </div>
+
+    <!-- Metrics Cards Row -->
+    <div class="row g-4 mb-5">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="glass-card p-4 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted text-uppercase fs-7 fw-semibold d-block mb-1" style="font-size: 0.8rem; letter-spacing: 1px;">Total de Vagas</span>
+                    <h2 class="fw-bold text-white mb-0">{{ total_vagas }}</h2>
+                </div>
+                <div class="bg-primary bg-opacity-10 p-3 rounded-3 text-primary">
+                    <i class="fa-solid fa-square-parking fs-3"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="glass-card p-4 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted text-uppercase fs-7 fw-semibold d-block mb-1" style="font-size: 0.8rem; letter-spacing: 1px;">Disponíveis</span>
+                    <h2 class="fw-bold text-success mb-0" style="text-shadow: 0 0 10px rgba(16, 185, 129, 0.2);">{{ vagas_disponiveis }}</h2>
+                </div>
+                <div class="bg-success bg-opacity-10 p-3 rounded-3 text-success">
+                    <i class="fa-solid fa-circle-check fs-3"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="glass-card p-4 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted text-uppercase fs-7 fw-semibold d-block mb-1" style="font-size: 0.8rem; letter-spacing: 1px;">Ocupadas</span>
+                    <h2 class="fw-bold text-info mb-0" style="text-shadow: 0 0 10px rgba(59, 130, 246, 0.2);">{{ vagas_ocupadas }}</h2>
+                </div>
+                <div class="bg-info bg-opacity-10 p-3 rounded-3 text-info">
+                    <i class="fa-solid fa-bicycle fs-3"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="glass-card p-4 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted text-uppercase fs-7 fw-semibold d-block mb-1" style="font-size: 0.8rem; letter-spacing: 1px;">Bloqueadas</span>
+                    <h2 class="fw-bold text-danger mb-0" style="text-shadow: 0 0 10px rgba(239, 68, 68, 0.2);">{{ vagas_bloqueadas }}</h2>
+                </div>
+                <div class="bg-danger bg-opacity-10 p-3 rounded-3 text-danger">
+                    <i class="fa-solid fa-ban fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid of Parking Spaces -->
+    <div class="mb-5">
+        <h3 class="fw-bold text-white mb-4 d-flex align-items-center gap-2">
+            <i class="fa-solid fa-grip text-primary"></i> Vagas no Estacionamento
+        </h3>
+        
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            {% for vaga in vagas %}
+                <div class="col">
+                    <div class="vaga-card {{ vaga.status }}">
+                        
+                        <!-- Card Header -->
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <span class="text-muted fs-8 d-block uppercase" style="font-size: 0.75rem; letter-spacing: 1px;">Vaga</span>
+                                <h4 class="vaga-numero text-white mb-0">#{{ vaga.numero }}</h4>
+                            </div>
+                            <div class="vaga-tag">
+                                <span class="status-pill status-{{ vaga.status }}">
+                                    {% if vaga.status == 'disponivel' %}
+                                        <i class="fa-solid fa-circle-dot fs-9"></i> Disponível
+                                    {% elif vaga.status == 'ocupada' %}
+                                        <i class="fa-solid fa-bicycle fs-9"></i> Ocupada
+                                    {% else %}
+                                        <i class="fa-solid fa-ban fs-9"></i> Bloqueada
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="my-4">
+                            {% if vaga.status == 'ocupada' and vaga.aluno_atual %}
+                                <div class="p-2 rounded bg-light border border-light-subtle">
+                                    <span class="text-muted d-block" style="font-size: 0.75rem; text-transform: uppercase;">Aluno</span>
+                                    <strong class="text-white d-block text-truncate" style="font-size: 0.95rem;">{{ vaga.aluno_atual.nome }}</strong>
+                                    <span class="text-muted" style="font-size: 0.8rem;">Matrícula: {{ vaga.aluno_atual.matricula }}</span>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-2">
+                                    <span class="text-muted" style="font-size: 0.9rem; font-style: italic;">
+                                        {% if vaga.status == 'disponivel' %}
+                                            Livre para estacionar
+                                        {% else %}
+                                            Vaga interditada
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Card Footer - Controls -->
+                        <div class="d-flex gap-2 border-top border-secondary border-opacity-20 pt-3 mt-auto">
+                            {% if vaga.status == 'ocupada' %}
+                                <button type="button" class="btn btn-sm btn-outline-info flex-grow-1" onclick="controleVaga(this.dataset.url, 'destravar')" data-url="{% url 'vaga_destravar' vaga.id %}" title="Destravar trava remotamente">
+                                    <i class="fa-solid fa-unlock me-1"></i> Destravar
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-success flex-grow-1" onclick="controleVaga(this.dataset.url, 'liberar')" data-url="{% url 'vaga_liberar' vaga.id %}" title="Liberar vaga no sistema">
+                                    <i class="fa-solid fa-circle-check me-1"></i> Liberar
+                                </button>
+                            {% elif vaga.status == 'disponivel' %}
+                                <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="controleVaga(this.dataset.url, 'bloquear')" data-url="{% url 'vaga_bloquear' vaga.id %}" style="white-space: nowrap;">
+                                    <i class="fa-solid fa-lock-open me-1"></i> Bloquear Vaga
+                                </button>
+                            {% elif vaga.status == 'bloqueada' %}
+                                <button type="button" class="btn btn-sm btn-outline-success w-100" onclick="controleVaga(this.dataset.url, 'desbloquear')" data-url="{% url 'vaga_desbloquear' vaga.id %}" style="white-space: nowrap;">
+                                    <i class="fa-solid fa-lock me-1"></i> Desbloquear
+                                </button>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 w-100 text-center py-5">
+                    <div class="glass-card p-5">
+                        <i class="fa-solid fa-folder-open text-muted fs-1 mb-3"></i>
+                        <h4 class="text-white">Nenhuma vaga cadastrada</h4>
+                        <p class="text-muted">Cadastre vagas no menu lateral para visualizar o status do estacionamento.</p>
+                        <a href="{% url 'vaga_create' %}" class="btn btn-primary mt-2">
+                            <i class="fa-solid fa-plus me-1"></i> Cadastrar Primeira Vaga
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Recent logs -->
+    <div class="row">
+        <div class="col-12">
+            <div class="glass-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-primary"></i> Movimentações Recentes
+                    </h4>
+                    <a href="{% url 'logs_list' %}" class="btn btn-sm btn-outline-primary">Ver Tudo</a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table custom-table text-white">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Ação</th>
+                                <th>Aluno / RFID</th>
+                                <th>Vaga</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in recent_logs %}
+                                <tr>
+                                    <td>{{ log.timestamp|date:"d/m/Y H:i:s" }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if log.acao == 'entrada' %}bg-success
+                                            {% elif log.acao == 'saida' %}bg-info
+                                            {% elif log.acao == 'liberacao_manual' %}bg-primary
+                                            {% elif log.acao == 'bloqueio' %}bg-danger
+                                            {% elif log.acao == 'desbloqueio' %}bg-secondary
+                                            {% else %}bg-warning{% endif %}">
+                                            {{ log.get_acao_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if log.aluno %}
+                                            <i class="fa-solid fa-user me-2 text-muted"></i>{{ log.aluno.nome }} ({{ log.aluno.matricula }})
+                                        {% else %}
+                                            <i class="fa-solid fa-id-card me-2 text-muted"></i>{{ log.rfid_uid }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if log.vaga %}
+                                            Vaga #{{ log.vaga.numero }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">Nenhum registro de movimentação encontrado.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

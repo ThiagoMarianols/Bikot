@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: bikot_web
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # Volume persistente para upload de mídia (fotos de avisos, etc.)
+      - media_data:/app/media
+    # Comando de inicialização via entrypoint
+    entrypoint: /app/entrypoint.sh
+
+# Se o banco de dados estiver rodando em outro container Docker, ele precisa estar
+# na mesma rede deste container. Você pode criar uma rede compartilhada ou usar uma existente:
+# 
+# Para usar uma rede externa existente, descomente a seção 'networks' abaixo e configure no serviço 'web':
+#     networks:
+#       - minha_rede_compartilhada
+#
+# networks:
+#   minha_rede_compartilhada:
+#     external: true
+
+volumes:
+  media_data:

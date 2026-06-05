@@ -1,0 +1,954 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel TV - Monitoramento do Estacionamento</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+        /* Viewport configuration */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden !important;
+            background-color: #f8fafc !important; /* Slate 50 */
+            color: #0f172a; /* Slate 900 */
+            font-family: 'Outfit', sans-serif;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            padding: 3vh 3vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Top Header */
+        .tv-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3vh;
+            flex-shrink: 0;
+        }
+
+        .tv-logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .tv-logo-title {
+            font-weight: 900;
+            font-size: min(3vh, 2rem);
+            letter-spacing: 2px;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .tv-logo-subtitle {
+            font-size: min(1.4vh, 0.9rem);
+            letter-spacing: 1.5px;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 600;
+            display: block;
+        }
+
+        .tv-clock {
+            font-weight: 700;
+            font-size: min(3vh, 2rem);
+            color: #475569; /* Slate 600 */
+            letter-spacing: 1px;
+        }
+
+        /* Dashboard Main Layout grid */
+        .tv-content-grid {
+            flex-grow: 1;
+            display: flex;
+            gap: 2.5vw;
+            min-height: 0; /* Prevents overflow */
+            margin-bottom: 2vh;
+        }
+
+        .tv-metrics-column {
+            width: calc(30% - 1.25vw);
+            flex: 0 0 calc(30% - 1.25vw);
+            max-width: calc(30% - 1.25vw);
+            display: flex;
+            flex-direction: column;
+            gap: 2.5vh;
+            min-height: 0;
+        }
+
+        .tv-notices-column {
+            width: calc(70% - 1.25vw);
+            flex: 0 0 calc(70% - 1.25vw);
+            max-width: calc(70% - 1.25vw);
+            display: flex;
+            min-height: 0;
+            min-width: 0;
+        }
+
+        /* Premium Cards */
+        .tv-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            padding: 4vh 3vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            box-sizing: border-box;
+            min-height: 0;
+        }
+
+        /* Card 1: Vagas Livres */
+        .tv-card.vagas-livres {
+            border: 2px solid #22c55e; /* Green 500 */
+            box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.08), 0 8px 10px -6px rgba(34, 197, 94, 0.08);
+            height: calc(56.5% - 1.25vh);
+            flex: 0 0 calc(56.5% - 1.25vh);
+            max-height: calc(56.5% - 1.25vh);
+        }
+
+        /* Card 2: Vagas Ocupadas */
+        .tv-card.vagas-ocupadas {
+            background-color: #f1f5f9; /* Slate 100 */
+            border-color: #e2e8f0;
+            height: calc(43.5% - 1.25vh);
+            flex: 0 0 calc(43.5% - 1.25vh);
+            max-height: calc(43.5% - 1.25vh);
+        }
+
+        /* Card 3: Avisos */
+        .tv-card.avisos-card {
+            width: 100%;
+            height: 100%;
+            max-height: 100%;
+            justify-content: flex-start;
+            gap: 2.5vh;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Card Inner Grid Typography */
+        .card-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            flex-grow: 1;
+            min-height: 0;
+        }
+
+        .card-label {
+            font-size: min(3vh, 1.8rem);
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.1;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+        }
+
+        .card-number {
+            font-size: min(10vh, 6.5rem);
+            font-weight: 900;
+            line-height: 0.9;
+        }
+
+        .vagas-livres .card-number {
+            color: #16a34a; /* Green 600 */
+        }
+
+        .vagas-ocupadas .card-number {
+            color: #334155; /* Slate 700 */
+        }
+
+        /* Custom Progress Bar for Vagas Livres */
+        .progress-container {
+            width: 100%;
+            margin-top: 2vh;
+            flex-shrink: 0;
+        }
+
+        .progress-bar-wrapper {
+            height: 12px;
+            background-color: #e2e8f0;
+            border-radius: 30px;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #22c55e;
+            border-radius: 30px;
+            width: 0%;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        }
+
+        .progress-meta {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 0.8vh;
+            font-size: min(1.8vh, 1.1rem);
+            font-weight: 700;
+            color: #64748b;
+        }
+
+        /* Avisos Container styles */
+        .notices-header {
+            font-size: min(2vh, 1.1rem);
+            font-weight: 800;
+            color: #1e293b;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            width: 100%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .notice-content-wrapper {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 2vh 1vw;
+            box-sizing: border-box;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .notice-text {
+            font-size: min(3.8vh, 2.2rem);
+            font-weight: 700;
+            color: #0f172a;
+            text-align: center;
+            line-height: 1.4;
+            max-width: 100%;
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            max-height: 100%;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 6;
+            -webkit-box-orient: vertical;
+        }
+
+        /* Transição suave de conteúdo para o container dinâmico */
+        #notice-container {
+            transition: opacity 0.5s ease-in-out;
+            opacity: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+            overflow: hidden;
+        }
+        
+        #notice-container.fade-out {
+            opacity: 0;
+        }
+
+        /* Layout 1: Texto Centrado (Apenas Texto) */
+        .notice-layout-text {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            padding: 2vh 1vw;
+        }
+
+        .notice-layout-text .notice-title {
+            font-size: min(2.8vh, 1.6rem);
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2vh;
+        }
+
+        .notice-layout-text .notice-description {
+            font-size: min(4.2vh, 2.5rem);
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.4;
+        }
+
+        /* Layout 2: Split (Imagem com overlay na esquerda + QR Code na direita) */
+        .notice-layout-split {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 2.5vw;
+            min-height: 0;
+        }
+
+        .notice-split-left {
+            width: 65%;
+            height: 100%;
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            flex-shrink: 0;
+        }
+
+        .notice-split-left img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .notice-split-left .notice-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 24px;
+            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 65%, rgba(0,0,0,0) 100%);
+            color: #ffffff;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .notice-split-left .notice-overlay-tag {
+            font-size: min(2vh, 1rem);
+            font-weight: 800;
+            color: #fbbf24;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .notice-split-left .notice-overlay-text {
+            font-size: min(3vh, 1.6rem);
+            font-weight: 600;
+            color: #ffffff;
+            line-height: 1.35;
+            margin: 0;
+        }
+
+        .notice-split-right {
+            width: 32%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #f8fafc;
+            border: 1px solid #f1f5f9;
+            border-radius: 20px;
+            padding: 3vh 2vw;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .notice-split-right .qr-title {
+            font-size: min(2.2vh, 1.25rem);
+            font-weight: 800;
+            color: #0f172a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+
+        .notice-split-right .qr-subtitle {
+            font-size: min(1.8vh, 1rem);
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0.5vh 0 0 0;
+        }
+
+        .notice-split-right .qr-image-wrapper {
+            background-color: #ffffff;
+            padding: 1.5vh;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5vh 0;
+        }
+
+        .notice-split-right .qr-image-wrapper img {
+            width: min(18vh, 150px) !important;
+            height: min(18vh, 150px) !important;
+            object-fit: contain;
+        }
+
+        .notice-split-right .qr-caption {
+            font-size: min(1.6vh, 0.9rem);
+            font-weight: 800;
+            color: #0f172a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1.3;
+            max-width: 90%;
+            margin-bottom: 0.5vh;
+        }
+
+        .notice-split-right .qr-subtext {
+            font-size: min(1.4vh, 0.8rem);
+            font-weight: 500;
+            color: #64748b;
+            margin: 0;
+        }
+
+        /* Se NÃO tiver foto, mas tiver link: centralizar QR Code */
+        .notice-layout-split.no-photo {
+            justify-content: center;
+        }
+
+        .notice-layout-split.no-photo .notice-split-right {
+            width: 50%;
+            height: 100%;
+        }
+
+        /* Layout 3: Apenas Foto com overlay de texto (sem link/QR) */
+        .notice-layout-photo {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .notice-layout-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .notice-layout-photo .notice-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 30px;
+            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 65%, rgba(0,0,0,0) 100%);
+            color: #ffffff;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .notice-layout-photo .notice-overlay-tag {
+            font-size: min(2.2vh, 1.1rem);
+            font-weight: 800;
+            color: #fbbf24;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .notice-layout-photo .notice-overlay-text {
+            font-size: min(3.5vh, 1.8rem);
+            font-weight: 600;
+            color: #ffffff;
+            line-height: 1.35;
+            margin: 0;
+        }
+
+        /* Layout 1: Apenas Texto (Visual de Poster Premium) */
+        .notice-layout-text {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            padding: 4vh 2vw;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
+        }
+
+        .notice-layout-text .notice-title {
+            font-size: min(2.4vh, 1.25rem);
+            font-weight: 800;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 3vh;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .notice-layout-text .notice-description {
+            font-size: min(4vh, 2.2rem);
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.45;
+            margin: 0;
+            max-width: 90%;
+        }
+
+        /* Clean Minimalist Footer */
+        .tv-footer {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1.5vh;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #94a3b8;
+            font-size: min(1.5vh, 0.95rem);
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        /* Mobile Responsiveness for TV Dashboard */
+        @media (max-width: 768px) {
+            html, body {
+                height: auto;
+                overflow: auto !important;
+            }
+            body {
+                padding: 1.5rem;
+                height: auto;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                gap: 2rem;
+            }
+            .tv-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+                text-align: center;
+                margin-bottom: 1rem;
+            }
+            .tv-logo-container {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .tv-clock {
+                font-size: 1.4rem;
+            }
+            .tv-content-grid {
+                flex-direction: column;
+                gap: 2vh;
+                min-height: auto;
+                height: auto;
+                margin-bottom: 1rem;
+            }
+            .tv-metrics-column, .tv-notices-column {
+                width: 100% !important;
+                max-width: 100% !important;
+                flex: 0 0 auto !important;
+                height: auto !important;
+                max-height: none !important;
+            }
+            .tv-card.vagas-livres, .tv-card.vagas-ocupadas, .tv-card.avisos-card {
+                height: auto !important;
+                max-height: none !important;
+                flex: 0 0 auto !important;
+                padding: 3vh 5vw;
+                gap: 2vh;
+            }
+            .card-label {
+                font-size: 1.8rem;
+            }
+            .card-number {
+                font-size: 4.5rem;
+            }
+            .notice-text {
+                font-size: 1.6rem;
+                -webkit-line-clamp: none;
+                max-height: none;
+            }
+            
+            /* Adaptar os novos layouts no Mobile */
+            .notice-layout-split {
+                flex-direction: column;
+                gap: 1.5rem;
+                align-items: center;
+                height: auto !important;
+            }
+            .notice-split-left, .notice-split-right {
+                width: 100% !important;
+                text-align: center;
+                align-items: center;
+                height: auto !important;
+            }
+            .notice-split-left .notice-image-container {
+                max-height: 200px;
+                height: 200px !important;
+            }
+            .notice-split-left .notice-description {
+                -webkit-line-clamp: none;
+            }
+            .qr-code-wrapper canvas, .qr-code-wrapper img {
+                width: 120px !important;
+                height: 120px !important;
+            }
+            
+            .notice-layout-photo {
+                flex-direction: column;
+                gap: 1.5rem;
+                align-items: center;
+                height: auto !important;
+            }
+            .notice-photo-left, .notice-photo-right {
+                width: 100% !important;
+                text-align: center;
+                align-items: center;
+                height: auto !important;
+            }
+            .notice-photo-left .img-wrapper {
+                height: 200px !important;
+                width: 100%;
+            }
+            .notice-photo-right .notice-description {
+                -webkit-line-clamp: none;
+            }
+            .tv-footer {
+                flex-direction: column;
+                gap: 0.8rem;
+                align-items: center;
+                text-align: center;
+                padding-top: 1.5rem;
+                margin-top: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header class="tv-header">
+        <div class="tv-logo-container">
+            <i class="fa-solid fa-bicycle text-primary" style="font-size: min(3.8vh, 2.4rem);"></i>
+            <div>
+                <h1 class="tv-logo-title">BIKOT</h1>
+                <span class="tv-logo-subtitle">Estacionamento Inteligente</span>
+            </div>
+        </div>
+        <div class="tv-clock" id="clock-display">
+            <!-- Dynamic clock in HH:MM | DIA, DD MES format -->
+        </div>
+    </header>
+
+    <!-- Main Grid Content -->
+    <main class="tv-content-grid">
+        
+        <!-- Left Column: Metrics -->
+        <div class="tv-metrics-column">
+            
+            <!-- Card 1: Vagas Livres -->
+            <div class="tv-card vagas-livres">
+                <div class="card-row">
+                    <span class="card-label">Vagas<br>Livres:</span>
+                    <span class="card-number" id="count-livres">0</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar-wrapper">
+                        <div class="progress-bar-fill" id="progress-bar-fill"></div>
+                    </div>
+                    <div class="progress-meta" id="progress-percentage">0%</div>
+                </div>
+            </div>
+
+            <!-- Card 2: Vagas Ocupadas -->
+            <div class="tv-card vagas-ocupadas">
+                <div class="card-row">
+                    <span class="card-label">Vagas<br>Ocupadas:</span>
+                    <span class="card-number" id="count-ocupadas">0</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Notices -->
+        <div class="tv-notices-column">
+            <div class="tv-card avisos-card">
+                <div class="notices-header">
+                    <i class="fa-solid fa-bullhorn me-2 text-primary"></i> Avisos
+                </div>
+                <div class="notice-content-wrapper" id="notice-container">
+                    <div class="notice-layout-text">
+                        <p class="notice-description" id="notice-display-text">
+                            TENHA UMA EXCELENTE ESTADIA. FALE CONOSCO SE PRECISAR.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="tv-footer">
+        <div>
+            <i class="fa-solid fa-tv me-1 text-secondary"></i> Painel de Entrada
+        </div>
+        <div>
+            <span class="fw-semibold"><i class="fa-solid fa-circle-check text-success me-1"></i> SISTEMA OPERACIONAL</span>
+        </div>
+    </footer>
+
+    <!-- QR Codes gerados dinamicamente via tag img pela API pública QRServer -->
+
+    <!-- JS Logic -->
+    <script>
+        // Dynamic clock logic
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            
+            // Format date string to match: "TER, 02 JUN"
+            const options = { weekday: 'short', day: '2-digit', month: 'short' };
+            let dateString = now.toLocaleDateString('pt-BR', options).toUpperCase();
+            
+            // Clean up periods if any (like "jun." to "JUN")
+            dateString = dateString.replace(/\./g, '');
+            
+            document.getElementById('clock-display').textContent = `${timeString} | ${dateString}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Notices logic
+        let activeNotices = [];
+        let currentNoticeIndex = 0;
+        const defaultNotice = "TENHA UMA EXCELENTE ESTADIA. FALE CONOSCO SE PRECISAR.";
+        let cycleTimeoutId = null;
+        let tempoExibicaoMs = 6000;
+
+        function fetchAvisos() {
+            fetch('/api/avisos/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data && typeof data.tempo_exibicao !== 'undefined') {
+                        const newTempo = data.tempo_exibicao * 1000;
+                        if (newTempo !== tempoExibicaoMs) {
+                            tempoExibicaoMs = newTempo;
+                            if (cycleTimeoutId) {
+                                clearTimeout(cycleTimeoutId);
+                                cycleTimeoutId = setTimeout(cycleNotices, tempoExibicaoMs);
+                            }
+                        }
+                    }
+
+                    const wasEmpty = activeNotices.length === 0;
+                    const newAvisos = (data && data.avisos) ? data.avisos : [];
+                    activeNotices = newAvisos;
+
+                    if (wasEmpty && activeNotices.length > 0) {
+                        cycleNotices();
+                    }
+                })
+                .catch(err => {
+                    console.error('Erro ao buscar avisos:', err);
+                    activeNotices = [];
+                });
+        }
+
+        function cycleNotices() {
+            if (cycleTimeoutId) {
+                clearTimeout(cycleTimeoutId);
+            }
+
+            const containerEl = document.getElementById('notice-container');
+            if (!containerEl) return;
+
+            containerEl.classList.add('fade-out');
+
+            setTimeout(() => {
+                containerEl.innerHTML = ''; // Limpar conteúdo antigo
+                
+                if (activeNotices.length > 0) {
+                    if (currentNoticeIndex >= activeNotices.length) {
+                        currentNoticeIndex = 0;
+                    }
+                    const aviso = activeNotices[currentNoticeIndex];
+                    currentNoticeIndex = (currentNoticeIndex + 1) % activeNotices.length;
+                    
+                    const titulo = aviso.titulo || 'AVISO';
+                    const texto = (aviso.texto || '').trim();
+                    const link = aviso.link;
+                    const foto = aviso.foto;
+                    const foto_fit = aviso.foto_fit || 'cover';
+                    
+                    if (link) {
+                        // Layout 2: Split (Imagem com overlay na esquerda + QR Code na direita)
+                        const splitDiv = document.createElement('div');
+                        splitDiv.className = 'notice-layout-split';
+                        if (!foto) {
+                            splitDiv.classList.add('no-photo');
+                        }
+                        
+                        let leftHtml = '';
+                        if (foto) {
+                            leftHtml += `
+                                <div class="notice-split-left">
+                                    <img src="${foto}" alt="Anúncio" style="object-fit: ${foto_fit};">
+                                    <div class="notice-overlay">
+                                        <span class="notice-overlay-tag">${titulo}</span>
+                                        <p class="notice-overlay-text">${texto}</p>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        
+                        // Determinar dinamicamente os textos da ação do QR Code com base no conteúdo
+                        let qrTitle = "SAIBA MAIS";
+                        let qrSubtitle = "ACESSE JÁ:";
+                        let qrCaption = "ESCANEIE PARA MAIS INFORMAÇÕES";
+                        let qrSubtext = "Acesse o link.";
+                        
+                        const textUpper = texto.toUpperCase();
+                        const titleUpper = titulo.toUpperCase();
+                        
+                        if (textUpper.includes("E-BIKE") || titleUpper.includes("E-BIKE") || textUpper.includes("TEST-DRIVE") || textUpper.includes("RESERVE") || textUpper.includes("VAGA")) {
+                            qrTitle = "PARTICIPE";
+                            qrSubtitle = "RESERVE JÁ:";
+                            qrCaption = "ESCANEIE PARA TEST-DRIVE / OFERTA ESPECIAL";
+                            qrSubtext = "Agende seu horário.";
+                        }
+                        
+                        let rightHtml = `
+                            <div class="notice-split-right">
+                                <div>
+                                    <h4 class="qr-title">${qrTitle}</h4>
+                                    <h5 class="qr-subtitle">${qrSubtitle}</h5>
+                                </div>
+                                <div class="qr-image-wrapper">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(link)}" alt="QR Code">
+                                </div>
+                                <div>
+                                    <p class="qr-caption">${qrCaption}</p>
+                                    <p class="qr-subtext">${qrSubtext}</p>
+                                </div>
+                            </div>
+                        `;
+                        
+                        splitDiv.innerHTML = `${leftHtml}${rightHtml}`;
+                        containerEl.appendChild(splitDiv);
+                        
+                    } else if (foto) {
+                        // Layout 3: Foto com texto overlay (Full Width)
+                        const photoDiv = document.createElement('div');
+                        photoDiv.className = 'notice-layout-photo';
+                        
+                        photoDiv.innerHTML = `
+                            <img src="${foto}" alt="Anúncio Imagem" style="object-fit: ${foto_fit};">
+                            <div class="notice-overlay">
+                                <span class="notice-overlay-tag">${titulo}</span>
+                                <p class="notice-overlay-text">${texto}</p>
+                            </div>
+                        `;
+                        
+                        containerEl.appendChild(photoDiv);
+                        
+                    } else {
+                        // Layout 1: Apenas Texto
+                        const textDiv = document.createElement('div');
+                        textDiv.className = 'notice-layout-text';
+                        textDiv.innerHTML = `
+                            <h4 class="notice-title"><i class="fa-solid fa-bullhorn text-primary me-2"></i>${titulo}</h4>
+                            <p class="notice-description">${texto}</p>
+                        `;
+                        containerEl.appendChild(textDiv);
+                    }
+                    
+                } else {
+                    // Aviso padrão quando não há avisos ativos
+                    const textDiv = document.createElement('div');
+                    textDiv.className = 'notice-layout-text';
+                    textDiv.innerHTML = `
+                        <p class="notice-description">${defaultNotice}</p>
+                    `;
+                    containerEl.appendChild(textDiv);
+                }
+                
+                containerEl.classList.remove('fade-out');
+
+                // Schedule the next cycle
+                cycleTimeoutId = setTimeout(cycleNotices, tempoExibicaoMs);
+            }, 500); // Aguardar o término do fade-out (0.5s)
+        }
+
+        // Buscar avisos imediatamente e depois a cada 12 segundos
+        fetchAvisos();
+        setInterval(fetchAvisos, 12000); // Recarregar do banco a cada 12s
+        cycleNotices(); // Inicializar o ciclo
+
+        // Vagas polling logic
+        function fetchVagas() {
+            fetch('/api/vagas/')
+                .then(response => response.json())
+                .then(data => {
+                    let total = data.length;
+                    let disponiveis = 0;
+                    let ocupadas = 0;
+
+                    data.forEach(vaga => {
+                        if (vaga.status === 'disponivel') {
+                            disponiveis++;
+                        } else if (vaga.status === 'ocupada') {
+                            ocupadas++;
+                        }
+                    });
+
+                    // Update UI counters
+                    document.getElementById('count-livres').textContent = disponiveis;
+                    document.getElementById('count-ocupadas').textContent = ocupadas;
+
+                    // Calculate percentage
+                    let pct = 0;
+                    if (total > 0) {
+                        pct = Math.round((disponiveis / total) * 100);
+                    }
+
+                    // Update progress bar
+                    document.getElementById('progress-bar-fill').style.width = pct + '%';
+                    document.getElementById('progress-percentage').textContent = pct + '%';
+                })
+                .catch(err => {
+                    console.error('Erro de polling das vagas:', err);
+                });
+        }
+
+        // Poll vacancies every 2 seconds
+        fetchVagas();
+        setInterval(fetchVagas, 2000);
+    </script>
+</body>
+</html>

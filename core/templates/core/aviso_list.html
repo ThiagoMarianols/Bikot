@@ -1,0 +1,161 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Avisos - Bikot{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    
+    <!-- Page Header -->
+    <div class="row align-items-center mb-5">
+        <div class="col-md-6 col-sm-12">
+            <h1 class="fw-bold text-white mb-1">Avisos e Comunicados</h1>
+            <p class="text-muted mb-0">Gerencie as mensagens e avisos exibidos dinamicamente na tela da TV.</p>
+        </div>
+        <div class="col-md-6 col-sm-12 d-flex flex-wrap align-items-center justify-content-md-end gap-3 mt-3 mt-md-0">
+            <!-- Form de Tempo de Transição na TV -->
+            <form method="POST" class="d-inline-flex align-items-center gap-2 glass-card py-2 px-3 border border-secondary" style="margin: 0; box-shadow: none;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_interval">
+                <span class="text-muted small fw-semibold" style="white-space: nowrap;">
+                    <i class="fa-solid fa-clock text-primary me-1"></i> Transição:
+                </span>
+                <div class="input-group input-group-sm" style="width: 130px;">
+                    <input type="number" name="tempo_exibicao" min="1" max="300" class="form-control text-dark bg-transparent border-secondary text-center" value="{{ tempo_exibicao }}" required>
+                    <span class="input-group-text text-muted bg-transparent border-secondary border-start-0" style="font-size: 0.85rem;">seg</span>
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary py-1.5 px-2.5 fw-semibold" title="Salvar tempo de transição">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                </button>
+            </form>
+
+            <a href="{% url 'aviso_create' %}" class="btn btn-primary py-2 px-3 fw-semibold">
+                <i class="fa-solid fa-plus me-2"></i> Criar Novo Aviso
+            </a>
+        </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="glass-card p-4">
+        <div class="table-responsive">
+            <table class="table custom-table text-white">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Mensagem</th>
+                        <th>Link / QR</th>
+                        <th>Imagem</th>
+                        <th>Expiração</th>
+                        <th>Data de Criação</th>
+                        <th>Status</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for aviso in page_obj %}
+                        <tr>
+                            <td style="max-width: 150px;">
+                                <strong class="text-white text-truncate d-block" title="{{ aviso.titulo }}">{{ aviso.titulo }}</strong>
+                            </td>
+                            <td style="max-width: 250px;" class="text-muted text-truncate" title="{{ aviso.texto }}">{{ aviso.texto }}</td>
+                            <td style="max-width: 150px;" class="text-truncate">
+                                {% if aviso.link %}
+                                    <a href="{{ aviso.link }}" target="_blank" class="text-info" title="{{ aviso.link }}">
+                                        <i class="fa-solid fa-link me-1"></i> Link
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if aviso.foto %}
+                                    <a href="{{ aviso.foto.url }}" target="_blank">
+                                        <img src="{{ aviso.foto.url }}" alt="Preview" class="rounded border border-secondary" style="height: 35px; width: 50px; object-fit: cover;">
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if aviso.data_expiracao %}
+                                    <span class="text-warning">
+                                        <i class="fa-regular fa-clock me-1"></i> {{ aviso.data_expiracao|date:"d/m/Y H:i" }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">Sem expiração</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ aviso.timestamp|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                {% if aviso.ativo %}
+                                    <span class="status-pill status-disponivel">
+                                        <i class="fa-solid fa-circle-check"></i> Exibindo
+                                    </span>
+                                {% else %}
+                                    <span class="status-pill status-bloqueada">
+                                        <i class="fa-solid fa-ban"></i> Inativo
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'aviso_update' aviso.pk %}" class="btn btn-sm btn-outline-info me-2">
+                                    <i class="fa-solid fa-pen-to-square"></i> Editar
+                                </a>
+                                <a href="{% url 'aviso_delete' aviso.pk %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="fa-solid fa-trash-can"></i> Excluir
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-5">Nenhum aviso cadastrado.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        {% if page_obj.has_other_pages %}
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 border-top border-secondary border-opacity-20 pt-4 mt-3">
+                <span class="text-muted" style="font-size: 0.9rem;">
+                    Exibindo <strong>{{ page_obj.start_index }}</strong> - <strong>{{ page_obj.end_index }}</strong> de <strong>{{ page_obj.paginator.count }}</strong> avisos
+                </span>
+                <nav aria-label="Navegação de páginas de avisos">
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link text-muted border-secondary bg-transparent" href="?page=1" title="Primeira Página">
+                                    <i class="fa-solid fa-angles-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link text-muted border-secondary bg-transparent" href="?page={{ page_obj.previous_page_number }}" title="Página Anterior">
+                                    <i class="fa-solid fa-angle-left"></i> Anterior
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item active">
+                            <span class="page-link border-primary bg-primary text-white">{{ page_obj.number }}</span>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link text-muted border-secondary bg-transparent" href="?page={{ page_obj.next_page_number }}" title="Próxima Página">
+                                    Próxima <i class="fa-solid fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link text-muted border-secondary bg-transparent" href="?page={{ page_obj.paginator.num_pages }}" title="Última Página">
+                                    <i class="fa-solid fa-angles-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

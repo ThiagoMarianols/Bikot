@@ -1,0 +1,138 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Vagas - Bikot{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    
+    <!-- Page Header -->
+    <div class="row align-items-center mb-5">
+        <div class="col-sm-8">
+            <h1 class="fw-bold text-white mb-1">Vagas de Estacionamento</h1>
+            <p class="text-muted mb-0">Gerencie a infraestrutura física das vagas cadastradas no sistema.</p>
+        </div>
+        <div class="col-sm-4 text-sm-end mt-3 mt-sm-0">
+            <a href="{% url 'vaga_create' %}" class="btn btn-primary py-2 px-3 fw-semibold">
+                <i class="fa-solid fa-plus me-2"></i> Cadastrar Vaga
+            </a>
+        </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="glass-card p-4">
+        <div class="table-responsive">
+            <table class="table custom-table text-white">
+                <thead>
+                    <tr>
+                        <th>Número da Vaga</th>
+                        <th>Status</th>
+                        <th>Aluno Ocupante</th>
+                        <th>Destravamento Remoto Pendente</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vaga in page_obj %}
+                        <tr>
+                            <td>
+                                <strong class="text-white" style="font-size: 1.1rem;">Vaga #{{ vaga.numero }}</strong>
+                            </td>
+                            <td>
+                                <span class="status-pill status-{{ vaga.status }}">
+                                    {% if vaga.status == 'disponivel' %}
+                                        <i class="fa-solid fa-circle-dot"></i> Disponível
+                                    {% elif vaga.status == 'ocupada' %}
+                                        <i class="fa-solid fa-bicycle"></i> Ocupada
+                                    {% else %}
+                                        <i class="fa-solid fa-ban"></i> Bloqueada
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if vaga.aluno_atual %}
+                                    <i class="fa-solid fa-user text-muted me-2"></i>{{ vaga.aluno_atual.nome }} ({{ vaga.aluno_atual.matricula }})
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if vaga.pending_unlock %}
+                                    <span class="status-pill status-warning px-3 py-2">
+                                        <i class="fa-solid fa-spinner fa-spin me-2"></i> Sim (Aguardando ESP32)
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">Não</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if vaga.status == 'bloqueada' %}
+                                    <button type="button" class="btn btn-sm btn-outline-success me-2" onclick="controleVaga(this.dataset.url, 'desbloquear')" data-url="{% url 'vaga_desbloquear' vaga.id %}" title="Desbloquear vaga">
+                                        <i class="fa-solid fa-lock-open me-1"></i> Desbloquear
+                                    </button>
+                                {% else %}
+                                    <button type="button" class="btn btn-sm btn-outline-danger me-2" onclick="controleVaga(this.dataset.url, 'bloquear')" data-url="{% url 'vaga_bloquear' vaga.id %}" title="Bloquear vaga">
+                                        <i class="fa-solid fa-lock me-1"></i> Bloquear
+                                    </button>
+                                {% endif %}
+                                <a href="{% url 'vaga_update' vaga.pk %}" class="btn btn-sm btn-outline-info me-2">
+                                    <i class="fa-solid fa-pen-to-square"></i> Editar
+                                </a>
+                                <a href="{% url 'vaga_delete' vaga.pk %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="fa-solid fa-trash-can"></i> Excluir
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-5">Nenhuma vaga cadastrada.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        {% if page_obj.has_other_pages %}
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 border-top border-secondary border-opacity-20 pt-4 mt-3">
+                <span class="text-muted" style="font-size: 0.9rem;">
+                    Exibindo <strong>{{ page_obj.start_index }}</strong> - <strong>{{ page_obj.end_index }}</strong> de <strong>{{ page_obj.paginator.count }}</strong> vagas
+                </span>
+                <nav aria-label="Navegação de páginas de vagas">
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link text-muted border-secondary bg-transparent" href="?page=1" title="Primeira Página">
+                                    <i class="fa-solid fa-angles-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link text-muted border-secondary bg-transparent" href="?page={{ page_obj.previous_page_number }}" title="Página Anterior">
+                                    <i class="fa-solid fa-angle-left"></i> Anterior
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item active">
+                            <span class="page-link border-primary bg-primary text-white">{{ page_obj.number }}</span>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link text-muted border-secondary bg-transparent" href="?page={{ page_obj.next_page_number }}" title="Próxima Página">
+                                    Próxima <i class="fa-solid fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link text-muted border-secondary bg-transparent" href="?page={{ page_obj.paginator.num_pages }}" title="Última Página">
+                                    <i class="fa-solid fa-angles-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
