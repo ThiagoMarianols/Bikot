@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   bikot-web:
-    image: bikot:latest
+    image: ghcr.io/braynerdev/bikot:latest
 
     ports:
       - "8000:8000"
